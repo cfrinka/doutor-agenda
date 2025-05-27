@@ -1,7 +1,12 @@
-export default function Home() {
+import { Button } from "@/components/ui/button";
+import React from "react";
+
+const Home = () => {
   return (
-    <div>
-      <h1 className="text-red-500">Home</h1>
+    <div className="dark">
+      <Button>Click me</Button>
     </div>
   );
-}
+};
+
+export default Home;
