@@ -25,6 +25,8 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
+import Image from "next/image";
+import GoogleIcon from "./icons/GoogleIcon";
 
 const loginSchema = z.object({
   email: z
@@ -66,6 +68,14 @@ const LoginForm = () => {
       },
     );
   }
+
+  const handleGoogleLogin = async () => {
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/dashboard",
+      scopes: ["email", "profile"],
+    });
+  };
 
   return (
     <Card>
@@ -109,13 +119,22 @@ const LoginForm = () => {
               )}
             />
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex flex-col gap-2">
             <Button type="submit" className="w-full">
               {form.formState.isSubmitting ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 "Entrar"
               )}
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              type="button"
+              onClick={handleGoogleLogin}
+            >
+              <GoogleIcon />
+              Entrar com Google
             </Button>
           </CardFooter>
         </form>
