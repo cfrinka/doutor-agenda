@@ -1,8 +1,8 @@
 "use client";
 
 import { createClinic } from "@/app/actions/create-clinic";
-import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/_components/ui/button";
+import { DialogFooter } from "@/_components/ui/dialog";
 import {
   FormField,
   FormItem,
@@ -10,8 +10,8 @@ import {
   FormControl,
   FormMessage,
   Form,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/_components/ui/form";
+import { Input } from "@/_components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
