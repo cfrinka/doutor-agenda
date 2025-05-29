@@ -12,7 +12,7 @@ import { Dialog, DialogTrigger } from "@/_components/ui/dialog";
 import { Separator } from "@/_components/ui/separator";
 import { doctorsTable } from "@/db/schema";
 import { CalendarIcon, ClockIcon, DollarSignIcon } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import UpsertDoctorForm from "./upsert-doctor-form";
 import { getAvailability } from "../_helpers/availability";
 import { formatCurrencyInCents } from "@/helpers/currency";
@@ -22,6 +22,8 @@ interface DoctorCardProps {
 }
 
 const DoctorCard = ({ doctor }: DoctorCardProps) => {
+  const [isUpsertDoctorDialogOpen, setIsUpsertDoctorDialogOpen] =
+    useState(false);
   const doctorInitials = doctor.name
     .split(" ")
     .map((name) => name[0])
@@ -59,11 +61,21 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
       </CardContent>
       <Separator />
       <CardFooter>
-        <Dialog>
+        <Dialog
+          open={isUpsertDoctorDialogOpen}
+          onOpenChange={setIsUpsertDoctorDialogOpen}
+        >
           <DialogTrigger asChild>
             <Button className="w-full">Ver detalhes</Button>
           </DialogTrigger>
-          <UpsertDoctorForm />
+          <UpsertDoctorForm
+            doctor={{
+              ...doctor,
+              availableFromTime: availability.from.format("HH:mm:ss"),
+              availableToTime: availability.to.format("HH:mm:ss"),
+            }}
+            onSuccess={() => setIsUpsertDoctorDialogOpen(false)}
+          />
         </Dialog>
       </CardFooter>
     </Card>
