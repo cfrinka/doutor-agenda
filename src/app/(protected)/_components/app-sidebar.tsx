@@ -1,4 +1,5 @@
 "use client";
+
 import {
   CalendarDays,
   LayoutDashboard,
@@ -6,7 +7,17 @@ import {
   Stethoscope,
   UsersRound,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
+import { Avatar, AvatarFallback } from "@/_components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/_components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -19,19 +30,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/_components/ui/sidebar";
-import Link from "next/link";
-import Image from "next/image";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/_components/ui/dropdown-menu";
-import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import { Button } from "@/_components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
 
-// Menu items.
 const items = [
   {
     title: "Dashboard",
@@ -57,7 +57,10 @@ const items = [
 
 export function AppSidebar() {
   const router = useRouter();
-  const handleSignout = async () => {
+  const session = authClient.useSession();
+  const pathname = usePathname();
+
+  const handleSignOut = async () => {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
@@ -66,11 +69,10 @@ export function AppSidebar() {
       },
     });
   };
-
   return (
     <Sidebar>
       <SidebarHeader className="border-b p-4">
-        <Image src={"/logo.svg"} alt="Doutor Agenda" width={136} height={28} />
+        <Image src="/logo.svg" alt="Doutor Agenda" width={136} height={28} />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -79,7 +81,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={pathname === item.url}>
                     <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
@@ -96,11 +98,24 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button>Clínica </Button>
+                <SidebarMenuButton size="lg">
+                  <Avatar>
+                    <AvatarFallback>F</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm">
+                      {session.data?.user?.clinic?.name}
+                    </p>
+                    <p className="text-muted-foreground text-sm">
+                      {session.data?.user.email}
+                    </p>
+                  </div>
+                </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={handleSignout}>
-                  <LogOut /> Sair
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut />
+                  Sair
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

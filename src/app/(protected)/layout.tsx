@@ -1,5 +1,5 @@
 import { SidebarProvider, SidebarTrigger } from "@/_components/ui/sidebar";
-import { AppSidebar } from "./components/app-sidebar";
+import { AppSidebar } from "./_components/app-sidebar";
 
 export default function ProtectedLayout({
   children,
@@ -9,7 +9,7 @@ export default function ProtectedLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main>
+      <main className="w-full">
         <SidebarTrigger />
         {children}
       </main>
