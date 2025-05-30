@@ -127,7 +127,6 @@ const UpsertDoctorForm = ({ doctor, onSuccess }: UpsertDoctorFormProps) => {
   };
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log("values", values);
     upsertDoctorAction.execute({
       ...values,
       id: doctor?.id,
