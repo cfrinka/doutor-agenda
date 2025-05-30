@@ -1,15 +1,5 @@
 "use client";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/_components/ui/table";
-import { Button } from "@/_components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { UpsertPatientForm } from "./upsert-patient-form";
 import {
@@ -32,8 +22,10 @@ import { useAction } from "next-safe-action/hooks";
 import { deletePatient } from "@/app/actions/delete-patient";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { DataTable } from "@/app/_components/ui/data-table";
+import { columns } from "./columns";
 
-interface Patient {
+export interface Patient {
   id: string;
   name: string;
   email: string;
@@ -65,47 +57,14 @@ export function PatientsTable({ patients, clinicId }: PatientsTableProps) {
 
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Telefone</TableHead>
-            <TableHead>Sexo</TableHead>
-            <TableHead className="w-[100px]">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {patients.map((patient) => (
-            <TableRow key={patient.id}>
-              <TableCell>{patient.name}</TableCell>
-              <TableCell>{patient.email}</TableCell>
-              <TableCell>{patient.phoneNumber}</TableCell>
-              <TableCell>
-                {patient.sex === "male" ? "Masculino" : "Feminino"}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setEditingPatient(patient)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setDeletingPatient(patient)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <DataTable
+        columns={columns}
+        data={patients}
+        meta={{
+          onEdit: setEditingPatient,
+          onDelete: setDeletingPatient,
+        }}
+      />
 
       <Dialog
         open={!!editingPatient}
