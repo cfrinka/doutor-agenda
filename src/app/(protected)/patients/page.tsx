@@ -1,4 +1,12 @@
-import { PageContainer } from "@/_components/ui/page-container";
+import {
+  PageActions,
+  PageContainer,
+  PageContent,
+  PageDescription,
+  PageHeader,
+  PageHeaderContent,
+  PageTitle,
+} from "@/_components/ui/page-container";
 import { AddPatientButton } from "./_components/add-patient-button";
 import { db } from "@/db";
 import { patientsTable } from "@/db/schema";
@@ -28,12 +36,18 @@ export default async function PatientsPage() {
 
   return (
     <PageContainer>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Pacientes</h1>
-        <AddPatientButton clinicId={session.user.clinic.id} />
-      </div>
-
-      <div className="mt-8">
+      <PageHeader>
+        <PageHeaderContent>
+          <PageTitle>Pacientes</PageTitle>
+          <PageDescription>
+            Gerencie os pacientes da sua clínica
+          </PageDescription>
+        </PageHeaderContent>
+        <PageActions>
+          <AddPatientButton clinicId={session.user.clinic.id} />
+        </PageActions>
+      </PageHeader>
+      <PageContent>
         {patients.length === 0 ? (
           <div className="text-muted-foreground text-center">
             Nenhum paciente cadastrado
@@ -44,7 +58,7 @@ export default async function PatientsPage() {
             clinicId={session.user.clinic.id}
           />
         )}
-      </div>
+      </PageContent>
     </PageContainer>
   );
 }
