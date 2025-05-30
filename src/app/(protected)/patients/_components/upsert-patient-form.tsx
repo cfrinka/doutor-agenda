@@ -138,11 +138,11 @@ export function UpsertPatientForm({
           control={form.control}
           name="sex"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="w-full">
               <FormLabel>Sexo</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecione o sexo" />
                   </SelectTrigger>
                 </FormControl>

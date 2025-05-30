@@ -5,6 +5,8 @@ import { db } from "@/db";
 import { patientsTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 const upsertPatientSchema = z.object({
   id: z.string().optional(),
@@ -18,31 +20,51 @@ const upsertPatientSchema = z.object({
 export const upsertPatient = actionClient
   .schema(upsertPatientSchema)
   .action(async ({ parsedInput }) => {
-    try {
-      if (parsedInput.id) {
-        await db
-          .update(patientsTable)
-          .set({
-            name: parsedInput.name,
-            email: parsedInput.email,
-            phoneNumber: parsedInput.phoneNumber,
-            sex: parsedInput.sex,
-            updatedAt: new Date(),
-          })
-          .where(eq(patientsTable.id, parsedInput.id));
-      } else {
-        await db.insert(patientsTable).values({
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user) {
+      throw new Error("Unauthorized");
+    }
+
+    if (!session?.user.clinic?.id) {
+      throw new Error("Clinic not found");
+    }
+
+    if (parsedInput.id) {
+      const patient = await db.query.patientsTable.findFirst({
+        where: eq(patientsTable.id, parsedInput.id),
+      });
+
+      if (!patient) {
+        throw new Error("Paciente não encontrado");
+      }
+
+      if (patient.clinicId !== session.user.clinic.id) {
+        throw new Error("Paciente não encontrado");
+      }
+
+      await db
+        .update(patientsTable)
+        .set({
           name: parsedInput.name,
           email: parsedInput.email,
           phoneNumber: parsedInput.phoneNumber,
           sex: parsedInput.sex,
-          clinicId: parsedInput.clinicId,
-        });
-      }
-
-      revalidatePath("/patients");
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: "Erro ao salvar paciente" };
+          updatedAt: new Date(),
+        })
+        .where(eq(patientsTable.id, parsedInput.id));
+    } else {
+      await db.insert(patientsTable).values({
+        name: parsedInput.name,
+        email: parsedInput.email,
+        phoneNumber: parsedInput.phoneNumber,
+        sex: parsedInput.sex,
+        clinicId: session.user.clinic.id,
+      });
     }
+
+    revalidatePath("/patients");
+    return { success: true };
   });
