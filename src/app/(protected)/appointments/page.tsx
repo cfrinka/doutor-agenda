@@ -9,11 +9,12 @@ import {
 } from "@/_components/ui/page-container";
 import { db } from "@/db";
 import { doctorsTable, patientsTable } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { AppointmentsTable } from "./_components/appointments-table";
 import { AddAppointmentButton } from "./_components/add-appointment-button";
+import { eq } from "drizzle-orm";
 
 export default async function AppointmentsPage() {
   const session = await auth.api.getSession({
@@ -28,7 +29,15 @@ export default async function AppointmentsPage() {
     redirect("/clinic-form");
   }
 
-  const [doctors, patients] = await Promise.all([
+  const [appointments, doctors, patients] = await Promise.all([
+    db.query.appointmentsTable.findMany({
+      where: (appointments, { eq }) =>
+        eq(appointments.clinicId, session.user.clinic!.id),
+      with: {
+        patient: true,
+        doctor: true,
+      },
+    }),
     db.query.doctorsTable.findMany({
       where: eq(doctorsTable.clinicId, session.user.clinic.id),
     }),
@@ -51,9 +60,11 @@ export default async function AppointmentsPage() {
         </PageActions>
       </PageHeader>
       <PageContent>
-        <div className="text-muted-foreground text-center">
-          Lista de agendamentos será implementada em breve
-        </div>
+        <AppointmentsTable
+          appointments={appointments as any}
+          doctors={doctors}
+          patients={patients}
+        />
       </PageContent>
     </PageContainer>
   );
