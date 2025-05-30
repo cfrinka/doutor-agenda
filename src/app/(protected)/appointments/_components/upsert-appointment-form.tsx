@@ -6,6 +6,7 @@ import { z } from "zod";
 import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
 import { useAction } from "next-safe-action/hooks";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/_components/ui/button";
 import {
@@ -34,9 +35,13 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, X } from "lucide-react";
 import { upsertAppointment } from "@/app/actions/upsert-appointment";
 import { upsertAppointmentSchema } from "@/app/actions/upsert-appointment/schema";
+import { useQuery } from "@tanstack/react-query";
+import { getAvailableTimes } from "@/app/actions/get-available-times";
+import dayjs from "dayjs";
+import { datetime } from "drizzle-orm/mysql-core";
 
 type AppointmentFormSchema = z.infer<typeof upsertAppointmentSchema>;
 
@@ -51,6 +56,7 @@ export function UpsertAppointmentForm({
   patients,
   onSuccess,
 }: UpsertAppointmentFormProps) {
+  const router = useRouter();
   const form = useForm<AppointmentFormSchema>({
     resolver: zodResolver(upsertAppointmentSchema),
     defaultValues: {
@@ -58,10 +64,27 @@ export function UpsertAppointmentForm({
     },
   });
 
+  const selectedDoctorId = form.watch("doctorId");
+  const selectedPatientId = form.watch("patientId");
+  const selectedDate = form.watch("date");
+
+  const { data: availableTimes } = useQuery({
+    queryKey: ["available-times", selectedDate, selectedDoctorId],
+    queryFn: async () => {
+      const result = await getAvailableTimes({
+        date: dayjs(selectedDate).format("YYYY-MM-DD"),
+        doctorId: selectedDoctorId,
+      });
+      return result;
+    },
+    enabled: !!selectedDate && !!selectedDoctorId,
+  });
+
   const { execute, status } = useAction(upsertAppointment, {
     onSuccess: () => {
       toast.success("Agendamento criado com sucesso!");
       onSuccess?.();
+      router.refresh();
     },
     onError: () => {
       toast.error("Erro ao criar agendamento");
@@ -72,12 +95,27 @@ export function UpsertAppointmentForm({
     ? doctors.find((doctor) => doctor.id === form.watch("doctorId"))
     : null;
 
-  const isPatientAndDoctorSelected =
-    form.watch("patientId") && form.watch("doctorId");
+  const isPatientAndDoctorSelected = selectedDoctorId && selectedPatientId;
 
   async function onSubmit(data: AppointmentFormSchema) {
     execute(data);
   }
+
+  const isDateAvailable = (date: Date) => {
+    if (!selectedDoctorId) return false;
+
+    const selectedDoctor = doctors.find(
+      (doctor) => doctor.id === selectedDoctorId,
+    );
+
+    if (!selectedDoctor) return;
+
+    const dayOfWeek = date.getDay();
+    return (
+      dayOfWeek >= selectedDoctor.availableFromWeekday &&
+      dayOfWeek <= selectedDoctor.availableToWeekday
+    );
+  };
 
   return (
     <Form {...form}>
@@ -203,8 +241,10 @@ export function UpsertAppointmentForm({
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) => date < new Date()}
-                    locale={ptBR}
+                    disabled={(date) =>
+                      date < new Date() || !isDateAvailable(date)
+                    }
+                    initialFocus
                   />
                 </PopoverContent>
               </Popover>
@@ -222,7 +262,7 @@ export function UpsertAppointmentForm({
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                disabled={!isPatientAndDoctorSelected || !form.watch("date")}
+                disabled={!selectedDate || !availableTimes?.data}
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -230,10 +270,27 @@ export function UpsertAppointmentForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {/* TODO: Implement time slots */}
-                  <SelectItem value="08:00">08:00</SelectItem>
-                  <SelectItem value="09:00">09:00</SelectItem>
-                  <SelectItem value="10:00">10:00</SelectItem>
+                  {Array.isArray(availableTimes?.data?.data)
+                    ? availableTimes.data.data.map((time) => (
+                        <SelectItem
+                          key={time.value}
+                          value={time.value}
+                          disabled={!time.available}
+                        >
+                          <div className="flex w-full items-center justify-between">
+                            <span>
+                              {time.value.split(":").slice(0, 2).join(":")}
+                            </span>
+                            {!time.available && (
+                              <span className="text-muted-foreground ml-2 flex items-center gap-1 text-xs">
+                                <X className="h-3 w-3 text-red-500" />
+                                Horário indisponível
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))
+                    : null}
                 </SelectContent>
               </Select>
               <FormMessage />

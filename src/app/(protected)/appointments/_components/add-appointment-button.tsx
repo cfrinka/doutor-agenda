@@ -4,6 +4,7 @@ import { Button } from "@/_components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -36,6 +37,7 @@ export function AddAppointmentButton({
         <DialogHeader>
           <DialogTitle>Novo agendamento</DialogTitle>
         </DialogHeader>
+        <DialogDescription>Crie um novo agendamento.</DialogDescription>
         <UpsertAppointmentForm
           doctors={doctors}
           patients={patients}

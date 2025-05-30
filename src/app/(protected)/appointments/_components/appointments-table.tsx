@@ -45,8 +45,6 @@ export function AppointmentsTable({
   doctors,
   patients,
 }: AppointmentsTableProps) {
-  const [editingAppointment, setEditingAppointment] =
-    useState<Appointment | null>(null);
   const [deletingAppointment, setDeletingAppointment] =
     useState<Appointment | null>(null);
   const router = useRouter();
@@ -68,28 +66,9 @@ export function AppointmentsTable({
         columns={columns}
         data={appointments}
         meta={{
-          onEdit: setEditingAppointment,
           onDelete: setDeletingAppointment,
         }}
       />
-
-      <Dialog
-        open={!!editingAppointment}
-        onOpenChange={() => setEditingAppointment(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar Agendamento</DialogTitle>
-          </DialogHeader>
-          {editingAppointment && (
-            <UpsertAppointmentForm
-              doctors={doctors}
-              patients={patients}
-              onSuccess={() => setEditingAppointment(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
 
       <AlertDialog
         open={!!deletingAppointment}
