@@ -1,12 +1,16 @@
-import { Button } from "@/_components/ui/button";
-import React from "react";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 const Home = () => {
-  return (
-    <div className="dark">
-      <Button>Click me</Button>
-    </div>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push("/authentication");
+  }, [router]);
+
+  return null; // Optional: or show a loading spinner if you like
 };
 
 export default Home;
