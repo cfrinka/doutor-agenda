@@ -28,7 +28,6 @@ export const POST = async (request: Request) => {
       if (!event.data.object.id) {
         throw new Error("Subscription ID not found");
       }
-      console.log("string", event.data.object.parent?.subscription_details);
       const { metadata, subscription } =
         event?.data.object.parent?.subscription_details;
 
